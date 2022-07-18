@@ -4,7 +4,7 @@ pragma solidity 0.8.10;
 import {FullMath}               from "./FullMath.sol";
 import {SafeTransferLib, ERC20} from "lib/solmate/src/utils/SafeTransferLib.sol";
 import {IERC721}                from "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
-
+import {ICavemart}            from "./interface/ICavemart.sol";
 // TODO add ERC721-holder logic
 
 // @notice              Allows a buyer to execute an order given they've got
@@ -13,8 +13,7 @@ import {IERC721}                from "lib/openzeppelin-contracts/contracts/token
 //                      or an ERC-20 if they're whitelisted.
 //
 // @author              Dionysus @ConcaveFi
-contract Cavemart {
-
+contract Cavemart is ICavemart {
 	// @dev This function ensures this contract can receive ETH
 	receive() external payable {}
 
@@ -60,15 +59,6 @@ contract Cavemart {
     // USER ACTION EVENTS
     //////////////////////////////////////////////////////////////////////
     
-    event OrderExecuted(
-        address indexed seller,
-        address indexed erc721,
-        address indexed erc20,
-        uint256 tokenId,
-        uint256 price,
-        uint256 deadline
-    );
-
     //////////////////////////////////////////////////////////////////////
     // EIP-712 LOGIC
     //////////////////////////////////////////////////////////////////////
@@ -79,7 +69,7 @@ contract Cavemart {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) public virtual view returns (address signer) {
+    ) public virtual view override returns (address signer) {
         
         bytes32 hash = keccak256(
             abi.encode(
@@ -99,7 +89,7 @@ contract Cavemart {
         signer = ecrecover(keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR(), hash)), v, r, s);
     }
 
-    function DOMAIN_SEPARATOR() public virtual view returns (bytes32) {
+    function DOMAIN_SEPARATOR() public virtual view override returns (bytes32) {
         return block.chainid == INITIAL_CHAIN_ID ? INITIAL_DOMAIN_SEPARATOR : computeDomainSeparator();
     }
 
@@ -122,7 +112,7 @@ contract Cavemart {
 
     function computePrice(
         SwapMetadata calldata data
-    ) public virtual view returns (uint256 price) {
+    ) public virtual view override returns (uint256 price) {
 
         data.endPrice == 0 || data.start == 0 ? 
             price = data.startPrice : 
@@ -131,54 +121,6 @@ contract Cavemart {
                 block.timestamp - data.start, 
                 data.deadline - data.start
             );
-    }
-
-    //////////////////////////////////////////////////////////////////////
-    // USER ACTIONS
-    //////////////////////////////////////////////////////////////////////
-
-    // @notice              Struct containing metadata for a ERC721 <-> ERC20 trade.
-    //
-    // @param seller        The address of the account that wants to sell their 
-    //                      'erc721' in exchange for 'price' denominated in 'erc20'.
-    //
-    // @param erc721        The address of a contract that follows the ERC-721 standard,
-    //                      also the address of the collection that holds the token that 
-    //                      you're purchasing.
-    //
-    // @param erc20         The address of a contract that follows the ERC-20 standard,
-    //                      also the address of the token that the seller wants in exchange
-    //                      for their 'erc721'
-    //
-    // @dev                 If 'erc20' is equal to address(0), we assume the seller wants
-    //                      native ETH in exchange for their 'erc721'.
-    //
-    // @param tokenId       The 'erc721' token identification number, 'tokenId'.
-    //
-    // @param startPrice    The starting or fixed price the offered 'erc721' is being sold for, 
-    //                      if ZERO we assume the 'seller' is hosting a dutch auction.
-    //
-    // @dev                 If a 'endPrice' and 'start' time are both defined, we assume
-    //                      the order type is a dutch auction. So 'startPrice' would be
-    //                      the price the auction starts at, otherwise 'startPrice' is
-    //                      the fixed cost the 'seller' is charging.
-    //
-    // @param endPrice      The 'endPrice' is the price in which a dutch auction would no
-    //                      no longer be valid after.
-    //
-    // @param start         The time in which the dutch auction starts, if ZERO we assume 
-    //                      the 'seller' is hosting a dutch auction.
-    //
-    // @param deadline      The time in which the signature/swap is not valid after.
-    struct SwapMetadata {
-        address seller;
-        address erc721;
-        address erc20;
-        uint256 tokenId;
-        uint256 startPrice;
-        uint256 endPrice;
-        uint256 start;
-        uint256 deadline;
     }
 
     // @notice              Allows a buyer to execute an order given they've got
@@ -197,7 +139,7 @@ contract Cavemart {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external virtual payable {
+    ) external virtual override payable {
 
         // Make sure both the 'erc721' and the 'erc20' wanted in exchange are both allowed.
         require(allowed[data.erc721] && allowed[data.erc20], "tokenNotWhitelisted()");
@@ -240,33 +182,6 @@ contract Cavemart {
         // Emit event since state was mutated.
         emit OrderExecuted(signer, data.erc721, data.erc20, data.tokenId, price, data.deadline);
     }
-
-    //////////////////////////////////////////////////////////////////////
-    // MANAGMENT EVENTS
-    //////////////////////////////////////////////////////////////////////
-
-    // @notice emitted when 'feeAddress' is updated.
-    event FeeAddressUpdated(
-        address newFeeAddress
-    );
-    
-    // @notice emitted when 'collectionFee' for 'collection' is updated.
-    event CollectionFeeUpdated(
-        address collection, 
-        uint256 percent
-    );
-    
-    // @notice emitted when 'allowed' for a 'token' has been updated.
-    event WhitelistUpdated(
-        address token,
-        bool whitelisted
-    );
-
-    // @notice emitted when ETH from fees is collected from the contract.
-    event FeeCollection(
-        address token,
-        uint256 amount
-    );
     
     //////////////////////////////////////////////////////////////////////
     // MANAGMENT MODIFIERS
