@@ -6,6 +6,7 @@ import { MockERC20, MockERC721 } from "./mocks/Tokens.sol";
 import "forge-std/Test.sol";
 
 import "../Cavemart.sol";
+import "../interface/ICavemart.sol";
 
 contract CavemartTest is Test {
 
@@ -119,7 +120,7 @@ contract CavemartTest is Test {
             block.timestamp
         );
 
-        address signer = cavemart.computeSigner(Cavemart.SwapMetadata(
+        address signer = cavemart.computeSigner(ICavemart.SwapMetadata(
             BOB,
             address(erc721), 
             address(erc20), 
@@ -157,7 +158,7 @@ contract CavemartTest is Test {
 
         vm.prank(ALICE);
         cavemart.swap(
-            Cavemart.SwapMetadata(
+            ICavemart.SwapMetadata(
                 BOB, 
                 address(erc721), 
                 address(erc20), 
@@ -200,7 +201,7 @@ contract CavemartTest is Test {
             block.timestamp
         );
 
-        Cavemart.SwapMetadata memory data = Cavemart.SwapMetadata(
+        ICavemart.SwapMetadata memory data = ICavemart.SwapMetadata(
             BOB, 
             address(erc721), 
             address(erc20), 
@@ -254,7 +255,7 @@ contract CavemartTest is Test {
         vm.deal(ALICE, startPrice);
         vm.prank(ALICE);
         cavemart.swap{value: startPrice}(
-            Cavemart.SwapMetadata(
+            ICavemart.SwapMetadata(
                 BOB, 
                 address(erc721), 
                 address(0), 
@@ -301,7 +302,7 @@ contract CavemartTest is Test {
             block.timestamp
         );
 
-        Cavemart.SwapMetadata memory data = Cavemart.SwapMetadata(
+        ICavemart.SwapMetadata memory data = ICavemart.SwapMetadata(
             BOB, 
             address(erc721), 
             address(0), 
@@ -348,7 +349,7 @@ contract CavemartTest is Test {
 
         vm.prank(ALICE);
         cavemart.swap(
-            Cavemart.SwapMetadata(
+            ICavemart.SwapMetadata(
                 BOB, 
                 address(erc721), 
                 address(erc20), 
@@ -382,7 +383,7 @@ contract CavemartTest is Test {
 
         vm.prank(ALICE);
         cavemart.swap(
-            Cavemart.SwapMetadata(
+            ICavemart.SwapMetadata(
                 BOB, 
                 address(erc721), 
                 address(erc20), 
@@ -416,7 +417,7 @@ contract CavemartTest is Test {
 
         vm.prank(ALICE);
         cavemart.swap(
-            Cavemart.SwapMetadata(
+            ICavemart.SwapMetadata(
                 BOB, 
                 address(erc721), 
                 address(erc20), 
@@ -448,7 +449,7 @@ contract CavemartTest is Test {
 
         vm.startPrank(ALICE);
         cavemart.swap(
-            Cavemart.SwapMetadata(
+            ICavemart.SwapMetadata(
                 BOB, 
                 address(erc721), 
                 address(erc20), 
@@ -460,7 +461,7 @@ contract CavemartTest is Test {
             ), v, r, s
         );
         cavemart.swap(
-            Cavemart.SwapMetadata(
+            ICavemart.SwapMetadata(
                 BOB, 
                 address(erc721), 
                 address(erc20), 
