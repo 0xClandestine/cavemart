@@ -187,6 +187,7 @@ contract CavemartTest is Test {
         vm.assume(feePercent <= 1e4);
 
         cavemart.updateCollectionFee(address(erc721), feePercent);
+        uint256 nonce = cavemart.nonces(BOB);
 
         (uint8 v, bytes32 r, bytes32 s) = sign(
             BOB,
@@ -196,7 +197,7 @@ contract CavemartTest is Test {
             tokenId, 
             startPrice,
             endPrice, 
-            0,
+            nonce,
             start,      // Denotes Fixed Price Order
             block.timestamp
         );
@@ -238,6 +239,7 @@ contract CavemartTest is Test {
         cavemart.updateCollectionFee(address(erc721), feePercent);
 
         setUpBalances(startPrice, tokenId);
+        uint256 nonce = cavemart.nonces(BOB);
 
         (uint8 v, bytes32 r, bytes32 s) = sign(
             BOB, 
@@ -247,7 +249,7 @@ contract CavemartTest is Test {
             tokenId, 
             startPrice, 
             0, 
-            0, 
+            nonce, 
             0, 
             block.timestamp
         );

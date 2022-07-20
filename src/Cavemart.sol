@@ -147,7 +147,7 @@ contract Cavemart is ICavemart {
         // Make sure the deadline the 'seller' has specified has not elapsed.
         require(data.deadline >= block.timestamp, "orderExpired()");
 
-        address signer = computeSigner(data, nonces[data.seller]++, v, r, s);
+        address signer = computeSigner(data, nonces[data.seller], v, r, s);
 
         // Make sure the recovered address is not NULL, and is equal to the 'seller'.
         require(signer != address(0) && signer == data.seller, "signatureInvalid()");
@@ -178,7 +178,7 @@ contract Cavemart is ICavemart {
 
         // Transfer 'erc721' from 'seller' to msg.sender/caller.
         IERC721(data.erc721).safeTransferFrom(signer, msg.sender, data.tokenId);
-
+        nonces[data.seller]++;
         // Emit event since state was mutated.
         emit OrderExecuted(signer, data.erc721, data.erc20, data.tokenId, price, data.deadline);
     }
